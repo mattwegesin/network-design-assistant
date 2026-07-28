@@ -200,7 +200,11 @@ def analyze():
 
     # Call Gemini API
     try:
-        client = genai.Client()
+        api_key = os.environ.get('GEMINI_API_KEY')
+        if not api_key:
+            return jsonify({'error': 'API Key missing on server.'}), 500
+            
+        client = genai.Client(api_key=api_key)
         response = client.models.generate_content(
             model='gemini-3.1-pro-preview',
             contents=contents,
