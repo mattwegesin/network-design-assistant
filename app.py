@@ -143,7 +143,7 @@ def process_file(file):
                 "data": csv_data.encode('utf-8')
             }
         except Exception as e:
-            print(f"Error parsing Excel: {e}")
+            raise ValueError(f"Failed to extract data from Excel file ({filename}): {str(e)}")
             
     # Process Word documents to plain text
     elif filename.endswith('.docx'):
@@ -154,7 +154,7 @@ def process_file(file):
                 "data": text.encode('utf-8')
             }
         except Exception as e:
-            print(f"Error parsing Word: {e}")
+            raise ValueError(f"Failed to extract text from Word document ({filename}): {str(e)}")
             
     # Process PowerPoint presentations to plain text
     elif filename.endswith('.pptx'):
@@ -170,7 +170,7 @@ def process_file(file):
                 "data": ("\n".join(text_runs)).encode('utf-8')
             }
         except Exception as e:
-            print(f"Error parsing PPTX: {e}")
+            raise ValueError(f"Failed to extract text from PowerPoint ({filename}): {str(e)}")
 
     # Fallback for PDFs, TXT, CSV, and Images (or if parsing fails)
     file.seek(0)
