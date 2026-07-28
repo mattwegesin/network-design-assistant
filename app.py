@@ -206,7 +206,7 @@ def analyze():
             
         client = genai.Client(api_key=api_key)
         response = client.models.generate_content(
-            model='gemini-3.1-pro-preview',
+            model='gemini-1.5-pro',
             contents=contents,
             config=types.GenerateContentConfig(
                 system_instruction=system_instruction,
