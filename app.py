@@ -127,8 +127,8 @@ def get_reference_content(brand_file):
     except FileNotFoundError:
         return ""
 
-def process_image(file):
-    # Read the file and encode to base64
+def process_file(file):
+    # Read the file and get bytes
     bytes_data = file.read()
     # Reset file pointer if needed again
     file.seek(0)
@@ -184,12 +184,12 @@ def analyze():
     
     for file in uploaded_files:
         if file.filename:
-            image_part = process_image(file)
+            file_part = process_file(file)
             contents.append(types.Part.from_bytes(
-                data=image_part['data'],
-                mime_type=image_part['mime_type'],
+                data=file_part['data'],
+                mime_type=file_part['mime_type'],
             ))
-            has_images = True
+            has_files = True
 
     # Build the final text prompt
     final_prompt = prompt
