@@ -202,7 +202,7 @@ def analyze():
     try:
         client = genai.Client()
         response = client.models.generate_content(
-            model='gemini-2.5-pro',
+            model='gemini-2.0-flash',
             contents=contents,
             config=types.GenerateContentConfig(
                 system_instruction=system_instruction,
