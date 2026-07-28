@@ -6,6 +6,9 @@ from google import genai
 from google.genai import types
 from dotenv import load_dotenv
 import markdown
+import pandas as pd
+import docx2txt
+from pptx import Presentation
 
 load_dotenv()
 
@@ -128,9 +131,50 @@ def get_reference_content(brand_file):
         return ""
 
 def process_file(file):
-    # Read the file and get bytes
+    filename = file.filename.lower()
+    
+    # Process Excel files to CSV text
+    if filename.endswith('.xlsx') or filename.endswith('.xls'):
+        try:
+            df = pd.read_excel(file)
+            csv_data = df.to_csv(index=False)
+            return {
+                "mime_type": "text/csv",
+                "data": csv_data.encode('utf-8')
+            }
+        except Exception as e:
+            print(f"Error parsing Excel: {e}")
+            
+    # Process Word documents to plain text
+    elif filename.endswith('.docx'):
+        try:
+            text = docx2txt.process(file)
+            return {
+                "mime_type": "text/plain",
+                "data": text.encode('utf-8')
+            }
+        except Exception as e:
+            print(f"Error parsing Word: {e}")
+            
+    # Process PowerPoint presentations to plain text
+    elif filename.endswith('.pptx'):
+        try:
+            prs = Presentation(file)
+            text_runs = []
+            for slide in prs.slides:
+                for shape in slide.shapes:
+                    if hasattr(shape, "text"):
+                        text_runs.append(shape.text)
+            return {
+                "mime_type": "text/plain",
+                "data": ("\n".join(text_runs)).encode('utf-8')
+            }
+        except Exception as e:
+            print(f"Error parsing PPTX: {e}")
+
+    # Fallback for PDFs, TXT, CSV, and Images (or if parsing fails)
+    file.seek(0)
     bytes_data = file.read()
-    # Reset file pointer if needed again
     file.seek(0)
     return {
         "mime_type": file.mimetype,
