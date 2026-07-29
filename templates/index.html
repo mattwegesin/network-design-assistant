@@ -137,7 +137,10 @@
     </form>
 
     <div class="result-box" id="resultBox">
-        <h2>Output</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h2 style="margin: 0;">Output</h2>
+            <button id="downloadBtn" class="btn" style="padding: 8px 16px; font-size: 14px; background-color: #28a745; display: none;" onclick="downloadReport()">Download Document (.doc)</button>
+        </div>
         <div id="resultContent"></div>
     </div>
 </div>
@@ -194,6 +197,10 @@
             const data = await response.json();
             resultContent.innerHTML = data.result;
             resultBox.style.display = 'block';
+            document.getElementById('downloadBtn').style.display = 'inline-block';
+            
+            // Store the HTML for downloading
+            window.latestReportHtml = data.result;
             
         } catch (err) {
             resultContent.innerHTML = `<p style="color: red;">Network Error: ${err.message}</p>`;
@@ -203,6 +210,25 @@
             loading.style.display = 'none';
         }
     });
+
+    function downloadReport() {
+        if (!window.latestReportHtml) return;
+        
+        const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' "+
+            "xmlns:w='urn:schemas-microsoft-com:office:word' "+
+            "xmlns='http://www.w3.org/TR/REC-html40'>"+
+            "<head><meta charset='utf-8'><title>Network Design Report</title></head><body>";
+        const footer = "</body></html>";
+        const sourceHTML = header + window.latestReportHtml + footer;
+        
+        const source = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(sourceHTML);
+        const fileDownload = document.createElement("a");
+        document.body.appendChild(fileDownload);
+        fileDownload.href = source;
+        fileDownload.download = 'Network_Design_Report.doc';
+        fileDownload.click();
+        document.body.removeChild(fileDownload);
+    }
 </script>
 
 </body>
