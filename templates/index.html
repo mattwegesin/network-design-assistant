@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Network Design Assistant</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -120,6 +121,18 @@
                 <option value="{{ brand.filename }}">{{ brand.name }}</option>
                 {% endfor %}
             </select>
+            
+            <div style="margin-top: 15px; background-color: #f8f9fa; padding: 15px; border-radius: 6px; border: 1px solid #dae0e5;">
+                <label style="margin-bottom: 10px;">Additional Reports:</label>
+                <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                    <input type="checkbox" id="includeSow" name="includeSow" value="true" style="width: auto; margin-right: 10px;">
+                    <label for="includeSow" style="font-weight: normal; margin: 0;">Include Statement of Work (SOW)</label>
+                </div>
+                <div style="display: flex; align-items: center;">
+                    <input type="checkbox" id="includeDiagram" name="includeDiagram" value="true" style="width: auto; margin-right: 10px;">
+                    <label for="includeDiagram" style="font-weight: normal; margin: 0;">Include Logical Network Diagram (Mermaid.js)</label>
+                </div>
+            </div>
         </div>
 
         <div class="form-group">
@@ -201,6 +214,13 @@
             
             // Store the HTML for downloading
             window.latestReportHtml = data.result;
+            
+            // Initialize Mermaid diagrams if any were generated
+            try {
+                mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
+            } catch (e) {
+                console.warn("Mermaid parsing failed", e);
+            }
             
         } catch (err) {
             resultContent.innerHTML = `<p style="color: red;">Network Error: ${err.message}</p>`;

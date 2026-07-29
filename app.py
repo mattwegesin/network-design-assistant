@@ -211,17 +211,50 @@ def analyze():
 
         task_type = request.form.get('taskType')
         brand_file = request.form.get('brandFile')
+        include_sow = request.form.get('includeSow') == 'true'
+        include_diagram = request.form.get('includeDiagram') == 'true'
         prompt = request.form.get('prompt', '')
-        
+
         if not task_type:
             return jsonify({'error': 'Task type is required.'}), 400
 
         # Build the system instruction and context
         system_instruction = ""
         context = ""
-        
+
         if task_type == 'designer':
             system_instruction = NETWORK_DESIGNER_INSTRUCTION
+            if include_sow:
+                system_instruction += """
+
+        ### Statement of Work (SOW) Generation
+        You must also generate a Statement of Work based on the standard format. 
+        Maintain the professional formatting:
+        - Executive Summary
+        - Scope of Work
+        - Deliverables
+        - Timeline
+        - Exclusions
+        - Pricing Structure
+
+        Crucially, populate **Section 3.1 (Equipment)** with the specific hardware required for each equipment room (MDF/IDF) based on your network design BOM.
+        Format for Section 3.1:
+        #### 3.1 Equipment per Location
+        - **MDF (Main Distribution Frame)**
+        - [Quantity] x [Part Number] - [Description]
+        - **IDF [Number] (Intermediate Distribution Frame)**
+        - [Quantity] x [Part Number] - [Description]
+        """
+            if include_diagram:
+                system_instruction += """
+
+        ### Logical Network Diagram
+        You must generate a logical network diagram using Mermaid.js syntax. 
+        Use a Markdown code block with `mermaid` as the language (i.e. ```mermaid).
+        Map the connections from the Gateway -> MDF -> IDFs -> Switches -> APs.
+        Keep it high-level and clear.
+        """
+
             if brand_file:
                 context = f"\n\n--- REFERENCE DATA ({brand_file}) ---\n" + get_reference_content(brand_file)
         elif task_type == 'readiness':
