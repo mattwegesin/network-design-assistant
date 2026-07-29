@@ -136,7 +136,13 @@
         </div>
 
         <div class="form-group">
-            <label for="files">Upload Floorplans, Notes, or Project Documents (Images, PDFs, Office, TXT, CSV)</label>
+            <label for="files" style="margin-bottom: 4px;">Upload Floorplans, Notes, or Project Documents</label>
+            <div style="margin-bottom: 8px;">
+                <label style="font-weight: normal; font-size: 14px; display: inline-flex; align-items: center; cursor: pointer;">
+                    <input type="checkbox" id="folderToggle" style="width: auto; margin-right: 8px; margin-bottom: 0;">
+                    Select an entire folder instead of individual files
+                </label>
+            </div>
             <input type="file" id="files" name="files" multiple accept="image/*,application/pdf,text/plain,text/csv,text/markdown,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation">
         </div>
 
@@ -162,6 +168,19 @@
     const taskTypeSelect = document.getElementById('taskType');
     const brandGroup = document.getElementById('brandGroup');
     const brandFile = document.getElementById('brandFile');
+    const folderToggle = document.getElementById('folderToggle');
+    const fileInput = document.getElementById('files');
+
+    // Toggle folder selection
+    folderToggle.addEventListener('change', function() {
+        if (this.checked) {
+            fileInput.setAttribute('webkitdirectory', '');
+            fileInput.setAttribute('directory', '');
+        } else {
+            fileInput.removeAttribute('webkitdirectory');
+            fileInput.removeAttribute('directory');
+        }
+    });
 
     // Show/hide brand selection based on task type
     taskTypeSelect.addEventListener('change', function() {
