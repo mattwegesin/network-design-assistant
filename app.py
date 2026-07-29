@@ -196,54 +196,52 @@ def index():
 
 @app.route('/analyze', methods=['POST'])
 def analyze():
-    if 'GEMINI_API_KEY' not in os.environ:
-        return jsonify({'error': 'API Key not configured on the server.'}), 500
-
-    task_type = request.form.get('taskType')
-    brand_file = request.form.get('brandFile')
-    prompt = request.form.get('prompt', '')
-    
-    if not task_type:
-        return jsonify({'error': 'Task type is required.'}), 400
-
-    # Build the system instruction and context
-    system_instruction = ""
-    context = ""
-    
-    if task_type == 'designer':
-        system_instruction = NETWORK_DESIGNER_INSTRUCTION
-        if brand_file:
-            context = f"\n\n--- REFERENCE DATA ({brand_file}) ---\n" + get_reference_content(brand_file)
-    elif task_type == 'readiness':
-        system_instruction = READINESS_INSTRUCTION
-        # For readiness, we load general design criteria if present, or just pass context
-        context = f"\n\n--- REFERENCE DATA (design-criteria.md) ---\n" + get_reference_content('design-criteria.md')
-
-    # Prepare contents for Gemini
-    contents = []
-    
-    # Process uploaded files (images/pdfs)
-    uploaded_files = request.files.getlist('files')
-    has_images = False
-    
-    for file in uploaded_files:
-        if file.filename:
-            file_part = process_file(file)
-            contents.append(types.Part.from_bytes(
-                data=file_part['data'],
-                mime_type=file_part['mime_type'],
-            ))
-            has_files = True
-
-    # Build the final text prompt
-    final_prompt = prompt
-    if context:
-         final_prompt += context
-         
-    contents.append(final_prompt)
-
-    # Call Gemini API
     try:
+        if 'GEMINI_API_KEY' not in os.environ:
+            return jsonify({'error': 'API Key not configured on the server.'}), 500
+
+        task_type = request.form.get('taskType')
+        brand_file = request.form.get('brandFile')
+        prompt = request.form.get('prompt', '')
+        
+        if not task_type:
+            return jsonify({'error': 'Task type is required.'}), 400
+
+        # Build the system instruction and context
+        system_instruction = ""
+        context = ""
+        
+        if task_type == 'designer':
+            system_instruction = NETWORK_DESIGNER_INSTRUCTION
+            if brand_file:
+                context = f"\n\n--- REFERENCE DATA ({brand_file}) ---\n" + get_reference_content(brand_file)
+        elif task_type == 'readiness':
+            system_instruction = READINESS_INSTRUCTION
+            # For readiness, we load general design criteria if present, or just pass context
+            context = f"\n\n--- REFERENCE DATA (design-criteria.md) ---\n" + get_reference_content('design-criteria.md')
+
+        # Prepare contents for Gemini
+        contents = []
+        
+        # Process uploaded files (images/pdfs/office)
+        uploaded_files = request.files.getlist('files')
+        
+        for file in uploaded_files:
+            if file.filename:
+                file_part = process_file(file)
+                contents.append(types.Part.from_bytes(
+                    data=file_part['data'],
+                    mime_type=file_part['mime_type'],
+                ))
+
+        # Build the final text prompt
+        final_prompt = prompt
+        if context:
+             final_prompt += context
+             
+        contents.append(final_prompt)
+
+        # Call Gemini API
         api_key = os.environ.get('GEMINI_API_KEY')
         if not api_key:
             return jsonify({'error': 'API Key missing on server.'}), 500
@@ -264,6 +262,8 @@ def analyze():
         return jsonify({'result': html_content, 'raw_markdown': response.text})
         
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
