@@ -176,8 +176,17 @@ def process_file(file):
     file.seek(0)
     bytes_data = file.read()
     file.seek(0)
+    
+    mime_type = file.mimetype
+    # Fix generic octet-stream mimetypes for known text/csv files
+    if mime_type == 'application/octet-stream' or not mime_type:
+        if filename.endswith('.csv'):
+            mime_type = 'text/csv'
+        elif filename.endswith('.txt') or filename.endswith('.md'):
+            mime_type = 'text/plain'
+            
     return {
-        "mime_type": file.mimetype,
+        "mime_type": mime_type,
         "data": bytes_data
     }
 
